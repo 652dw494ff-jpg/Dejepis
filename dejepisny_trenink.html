@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dějepis – trénink</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--text:#172033;--muted:#657087;--line:#dfe5ef;--accent:#315ee8;--good:#16804a;--bad:#bd3434;--soft:#edf1ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#111827;color:white;padding:24px 18px}header .wrap,main{max-width:850px;margin:auto}h1{margin:0;font-size:clamp(25px,5vw,36px);letter-spacing:-.7px}header p{margin:7px 0 0;color:#c8d1e1}
+main{padding:20px 14px 42px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px}.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}.stat small{display:block;color:var(--muted);font-size:12px}.stat strong{font-size:22px}
+.panel{margin-bottom:15px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.eyebrow{color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}.tag{background:var(--soft);color:#2448b9;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
+h2{font-size:22px;line-height:1.3;margin:8px 0 14px}p{margin:8px 0}.choices{display:grid;gap:9px;margin:14px 0}.choice{width:100%;text-align:left;border:1px solid var(--line);background:white;border-radius:12px;padding:12px 13px;color:var(--text);font:inherit;cursor:pointer;display:flex;gap:10px;align-items:flex-start}.choice b{background:#eef1f7;border-radius:7px;padding:1px 8px}.choice.selected{border:2px solid var(--accent);background:#f4f6ff;padding:11px 12px}.choice:disabled{cursor:default}
+textarea{width:100%;min-height:112px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;color:var(--text);background:white}label{font-weight:700;display:block;margin:12px 0 7px}.hint{color:var(--muted);font-size:13px}
+button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:11px 16px;cursor:pointer}.primary{background:var(--accent);color:white}.secondary{background:#edf0f6;color:#243047}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.feedback{border-radius:12px;padding:13px;margin-top:14px;background:#f1f4f9}.feedback.good{background:#e8f7ef;color:#135d37}.feedback.bad{background:#fff0f0;color:#8e2222}.feedback h3{margin:0 0 5px;font-size:17px}.hidden{display:none}.progress{height:7px;border-radius:9px;background:#e6eaf1;overflow:hidden;margin:10px 0 15px}.progress div{height:100%;background:var(--accent);width:0;transition:width .2s}.grade{font-size:28px;font-weight:800}.grade-note{color:var(--muted);font-size:13px}.topics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.topic{border:1px solid var(--line);border-radius:11px;padding:10px;font-size:13px;background:#fafbfe}.topic strong{display:block;font-size:14px}.review-item{border-top:1px solid var(--line);padding:10px 0}.review-item:first-child{border-top:0}.pill{display:inline-block;border-radius:7px;background:#f0f2f7;padding:2px 7px;font-size:12px;color:#46516a}
+@media(max-width:520px){.stats{gap:7px}.stat{padding:11px}.stat strong{font-size:19px}.panel{padding:13px}.topics{grid-template-columns:1fr}.topic{display:flex;justify-content:space-between;gap:10px}.topic strong{display:inline}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>📚 Dějepis – trénink</h1><p>Občanská válka v USA · Sjednocení Itálie · Sjednocení Německa</p></div></header>
+<main>
+<div class="stats">
+ <div class="stat"><small>Správné odpovědi</small><strong id="score">0 / 0</strong></div>
+ <div class="stat"><small>Úspěšnost</small><strong id="percent">—</strong></div>
+ <div class="stat"><small>Odhad známky</small><strong id="gradeSmall">—</strong></div>
+</div>
+<section class="panel" id="quizPanel">
+ <div class="row"><span class="eyebrow" id="qNumber">Otázka 1</span><span class="tag" id="topicTag">USA</span></div>
+ <div class="progress"><div id="progressBar"></div></div>
+ <h2 id="question"></h2>
+ <p id="context" class="hint"></p>
+ <div id="choiceArea" class="choices"></div>
+ <div id="writtenArea" class="hidden">
+  <label for="written">Napiš odpověď vlastními slovy</label>
+  <textarea id="written" placeholder="Zkus napsat, co si pamatuješ…"></textarea>
+  <p class="hint">Vyhodnocení porovná důležité pojmy a význam. Když si nebude jisté, označí odpověď ke kontrole místo automatického hádání.</p>
+ </div>
+ <div class="row">
+  <div><span class="hint">Způsob odpovědi</span><br><button id="modeABCD" class="secondary">ABCD</button> <button id="modeWords" class="secondary">Vlastními slovy</button></div>
+  <div class="buttons"><button id="checkBtn" class="primary">Vyhodnotit</button><button id="nextBtn" class="secondary hidden">Další otázka →</button></div>
+ </div>
+ <div id="feedback" class="feedback hidden" aria-live="polite"></div>
+</section>
+<section class="panel">
+ <div class="eyebrow">Tahák – nejdůležitější fakta</div>
+ <h2>Co si zapamatovat</h2>
+ <div class="topics">
+  <div class="topic"><strong>🇺🇸 USA</strong><span>1861–1865 · Abraham Lincoln · Sever zvítězil · otroctví zrušeno 1865</span></div>
+  <div class="topic"><strong>🇮🇹 Itálie</strong><span>1861 · Garibaldi a Cavour · král Viktor Emanuel II.</span></div>
+  <div class="topic"><strong>🇩🇪 Německo</strong><span>1871 · Prusko · Otto von Bismarck</span></div>
+ </div>
+</section>
+<section class="panel">
+ <div class="eyebrow">Výsledky</div><h2>Jak se ti daří?</h2>
+ <p id="gradeDetail">Odpověz alespoň na jednu otázku a zobrazí se orientační hodnocení.</p>
+ <p class="grade" id="gradeBig">—</p><p class="grade-note">Známka je pouze orientační odhad podle úspěšnosti, ne skutečná školní známka. U odpovědí vlastními slovy může být automatické vyhodnocení nepřesné.</p>
+ <div id="review"></div>
+ <div class="buttons"><button class="secondary" id="restartBtn">Začít znovu</button><button class="secondary" id="shuffleBtn">Zamíchat otázky</button></div>
+</section>
+</main>
+<script>
+const questions=[
+ {topic:"Občanská válka v USA",tag:"🇺🇸 USA",q:"Kdo byl prezidentem USA během občanské války v letech 1861–1865?",opts:["George Washington","Abraham Lincoln","Otto von Bismarck","Viktor Emanuel II."],correct:1,explain:"Abraham Lincoln byl prezidentem během občanské války." ,keywords:["abraham lincoln","lincoln"]},
+ {topic:"Sjednocení Itálie",tag:"🇮🇹 Itálie",q:"Kdo vedl dobrovolnické vojsko, které pomohlo sjednotit Itálii?",opts:["Giuseppe Garibaldi","Otto von Bismarck","Abraham Lincoln","Vilém I."],correct:0,explain:"Giuseppe Garibaldi vedl dobrovolnické vojsko známé jako červen košile." ,keywords:["garibaldi","dobrovolnick"]},
+ {topic:"Sjednocení Německa",tag:"🇩🇪 Německo",q:"Kdo byl hlavní politickou osobností sjednocení Německa v roce 1871?",opts:["Camillo Cavour","Napoleon Bonaparte","Otto von Bismarck","Giuseppe Garibaldi"],correct:2,explain:"Otto von Bismarck byl pruský politik, který se zásadně zasloužil o sjednocení Německa.",keywords:["bismarck","otto von bismarck"]},
+ {topic:"Občanská válka v USA",tag:"🇺🇸 USA",q:"Která strana zvítězila v občanské válce v USA?",opts:["Jih","Sever","Francie","Prusko"],correct:1,explain:"Zvítězil Sever a jižní státy zůstaly součástí USA.",keywords:["sever","unie","severní"]},
+ {topic:"Sjednocení Německa",tag:"🇩🇪 Německo",q:"Který stát sehrál hlavní roli při sjednocení Německa?",opts:["Francie","Rakousko","Prusko","Španělsko"],correct:2,explain:"Hlavní roli při sjednocení Německa sehrálo Prusko.",keywords:["prusko","prusk"]},
+ {topic:"Sjednocení Itálie",tag:"🇮🇹 Itálie",q:"Kdo se stal prvním králem sjednocené Itálie?",opts:["Viktor Emanuel II.","Vilém I.","Abraham Lincoln","Otto von Bismarck"],correct:0,explain:"Prvním králem sjednocené Itálie se stal Viktor Emanuel II.",keywords:["viktor emanuel","emanuel ii","viktor emanuel ii"]},
+ {topic:"Občanská válka v USA",tag:"🇺🇸 USA",q:"V jakém roce skončila občanská válka v USA?",opts:["1848","1861","1865","1871"],correct:2,explain:"Válka skončila v roce 1865.",keywords:["1865"]},
+ {topic:"Sjednocení Německa",tag:"🇩🇪 Německo",q:"V jakém roce bylo vyhlášeno Německé císařství?",opts:["1861","1865","1871","1914"],correct:2,explain:"Německé císařství bylo vyhlášeno v roce 1871.",keywords:["1871"]},
+ {topic:"Sjednocení Itálie",tag:"🇮🇹 Itálie",q:"Který politik byl důležitý při sjednocení Itálie a působil jako předseda vlády Sardinského království?",opts:["Camillo Cavour","Abraham Lincoln","Otto von Bismarck","George Washington"],correct:0,explain:"Camillo Cavour byl významným politikem a diplomatem při sjednocování Itálie.",keywords:["cavour","camillo cavour"]},
+ {topic:"Občanská válka v USA",tag:"🇺🇸 USA",q:"Co bylo po občanské válce v USA v roce 1865 zrušeno?",opts:["Prezidentský úřad","Otroctví","Všechny státy USA","Volby"],correct:1,explain:"13. dodatek ústavy USA zrušil otroctví v roce 1865.",keywords:["otroctví","otroctvi","13. dodatek","třináctý dodatek"]}
+];
+let order=questions.map((_,i)=>i), index=0, mode="abcd", selected=null, answered=false, results=[];
+const $=id=>document.getElementById(id);
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[.,!?;:]/g," ").replace(/\s+/g," ").trim()}
+function current(){return questions[order[index]]}
+function render(){
+ const q=current(); selected=null; answered=false;
+ $("qNumber").textContent=`Otázka ${index+1} z ${order.length}`; $("topicTag").textContent=q.tag;
+ $("question").textContent=q.q; $("context").textContent=""; $("progressBar").style.width=(index/order.length*100)+"%";
+ $("choiceArea").innerHTML=""; $("written").value=""; $("feedback").className="feedback hidden"; $("feedback").innerHTML="";
+ $("checkBtn").classList.remove("hidden"); $("nextBtn").classList.add("hidden");
+ $("modeABCD").className=mode==="abcd"?"primary":"secondary"; $("modeWords").className=mode==="words"?"primary":"secondary";
+ $("choiceArea").classList.toggle("hidden",mode!=="abcd"); $("writtenArea").classList.toggle("hidden",mode!=="words");
+ q.opts.forEach((opt,i)=>{const b=document.createElement("button");b.className="choice";b.innerHTML=`<b>${"ABCD"[i]}</b><span>${opt}</span>`;b.onclick=()=>{if(answered)return;selected=i;[...$("choiceArea").children].forEach((el,j)=>el.classList.toggle("selected",j===i))};$("choiceArea").appendChild(b)});
+ updateStats();
+}
+function gradeFor(p){if(p>=90)return "1";if(p>=75)return "2";if(p>=50)return "3";if(p>=30)return "4";return "5"}
+function updateStats(){
+ const total=results.length, correct=results.filter(r=>r.correct).length, p=total?Math.round(correct/total*100):null;
+ $("score").textContent=`${correct} / ${total}`;$("percent").textContent=p===null?"—":p+"%";$("gradeSmall").textContent=p===null?"—":gradeFor(p);
+ $("gradeBig").textContent=p===null?"—":gradeFor(p);
+ $("gradeDetail").textContent=p===null?"Odpověz alespoň na jednu otázku a zobrazí se orientační hodnocení.":`Zatím ${correct} správně z ${total} vyhodnocených odpovědí (${p} %).`;
+ $("review").innerHTML=results.length?'<h3>Poslední odpovědi</h3>'+results.slice().reverse().slice(0,5).map(r=>`<div class="review-item"><strong>${r.correct?"✅":"❌"} ${escapeHtml(r.question)}</strong><div class="hint">${escapeHtml(r.user)} · ${r.correct?"správně":("správná odpověď: "+r.correctText)}</div></div>`).join(""):"";
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function evaluateWords(text,q){
+ const n=norm(text);if(!n)return {correct:false,uncertain:true,reason:"Napiš prosím odpověď, nebo přepni na ABCD."};
+ const hits=q.keywords.filter(k=>n.includes(norm(k)));
+ // Exact key concepts get credit; for answers with few key terms avoid overclaiming.
+ if(hits.length>0)return {correct:true,reason:"Odpověď obsahuje důležitý pojem: "+hits[0]+"."};
+ const correctText=q.opts[q.correct];
+ const keyTokens=norm(correctText).split(" ").filter(w=>w.length>3);
+ if(keyTokens.some(w=>n.includes(w)))return {correct:true,reason:"Odpověď zřejmě vystihuje správný pojem."};
+ return {correct:false,reason:"Automatické hodnocení nenašlo klíčový pojem. Pokud jsi to napsal jinými slovy, výsledek nemusí být přesný."};
+}
+$("modeABCD").onclick=()=>{if(!answered){mode="abcd";render()}};
+$("modeWords").onclick=()=>{if(!answered){mode="words";render()}};
+$("checkBtn").onclick=()=>{
+ if(answered)return;const q=current();let ok=false, explanation=q.explain, user="";
+ if(mode==="abcd"){
+  if(selected===null){$("feedback").className="feedback";$("feedback").textContent="Nejdřív vyber jednu odpověď.";return}
+  ok=selected===q.correct;user="Odpověď "+ "ABCD"[selected]+": "+q.opts[selected];
+ }else{
+  user=$("written").value.trim();const ev=evaluateWords(user,q);
+  if(!user){$("feedback").className="feedback";$("feedback").textContent=ev.reason;return}
+  ok=ev.correct;explanation+=" "+ev.reason;
+ }
+ answered=true;results.push({question:q.q,correct:ok,user,correctText:q.opts[q.correct]});
+ $("feedback").className="feedback "+(ok?"good":"bad");
+ $("feedback").innerHTML=`<h3>${ok?"Správně! 🎉":"Ještě to procvičíme 🙂"}</h3><div>${escapeHtml(explanation)}</div><p><strong>Správná odpověď:</strong> ${escapeHtml(q.opts[q.correct])}</p>`;
+ $("checkBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");
+ [...$("choiceArea").children].forEach(b=>b.disabled=true);$("written").disabled=true;
+ updateStats();
+};
+$("nextBtn").onclick=()=>{index++;if(index>=order.length){index=0;order=questions.map((_,i)=>i);$("feedback").className="feedback";$("feedback").innerHTML="<h3>Prošel jsi všechny otázky! 🏁</h3><p>Můžeš pokračovat dalším kolem nebo si zamíchat pořadí.</p>";} $("written").disabled=false;render()};
+$("restartBtn").onclick=()=>{index=0;results=[];order=questions.map((_,i)=>i);$("written").disabled=false;render()};
+$("shuffleBtn").onclick=()=>{order=questions.map((_,i)=>i).sort(()=>Math.random()-.5);index=0;$("written").disabled=false;render()};
+render();
+</script>
+</body></html>
